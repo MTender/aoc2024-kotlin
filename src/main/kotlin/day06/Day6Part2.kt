@@ -1,6 +1,6 @@
 package day06
 
-import input.Input
+import general.Input
 
 fun main() {
     val map = Input.read("input.txt")

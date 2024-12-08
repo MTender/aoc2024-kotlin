@@ -1,4 +1,4 @@
-package input
+package general
 
 import kotlin.io.path.Path
 import kotlin.io.path.readLines

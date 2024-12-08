@@ -1,6 +1,6 @@
 package day04
 
-import input.Input
+import general.Input
 
 fun main() {
     var xmasCount = 0

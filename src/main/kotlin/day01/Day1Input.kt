@@ -1,6 +1,6 @@
 package day01
 
-import input.Input
+import general.Input
 
 object Day1Input {
 

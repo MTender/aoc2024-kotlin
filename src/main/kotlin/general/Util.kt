@@ -28,10 +28,6 @@ data class Loc(
         return isValid(Pair(map.size, map.first().length))
     }
 
-    fun isValid(map: Collection<Collection<Any>>): Boolean {
-        return isValid(Pair(map.size, map.first().size))
-    }
-
     fun isValid(mapSize: Pair<Int, Int>): Boolean {
         return rowIndex >= 0 &&
                 colIndex >= 0 &&

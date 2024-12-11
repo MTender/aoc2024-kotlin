@@ -1,5 +1,6 @@
 package day07
 
+import general.digitsCount
 import kotlin.math.log10
 import kotlin.math.pow
 
@@ -38,15 +39,11 @@ fun calculate(values: List<Int>, operators: List<Char>): Long {
         when (operator) {
             '+' -> result += nextValue
             '*' -> result *= nextValue
-            '|' -> result = result * 10.pow(digits(nextValue)) + nextValue
+            '|' -> result = result * 10.pow(nextValue.digitsCount()) + nextValue
         }
     }
 
     return result
-}
-
-fun digits(number: Int): Int {
-    return log10(number.toDouble()).toInt() + 1
 }
 
 fun Int.pow(exponent: Int): Int {

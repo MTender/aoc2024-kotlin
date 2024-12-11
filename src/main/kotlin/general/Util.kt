@@ -1,5 +1,7 @@
 package general
 
+import kotlin.math.log10
+
 data class Loc(
     val rowIndex: Int,
     val colIndex: Int,
@@ -38,4 +40,8 @@ data class Loc(
 
 fun List<String>.get(loc: Loc): Char {
     return this[loc.rowIndex][loc.colIndex]
+}
+
+fun Number.digitsCount(): Int {
+    return log10(this.toDouble()).toInt() + 1
 }

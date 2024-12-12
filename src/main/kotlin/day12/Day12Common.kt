@@ -5,7 +5,7 @@ import general.Loc
 import general.get
 import general.set
 
-fun findNextPlotStart(map: List<List<Char>>): Loc? {
+fun findNextRegionStart(map: List<List<Char>>): Loc? {
     for ((rowIndex, row) in map.withIndex()) {
         for ((colIndex, c) in row.withIndex()) {
             if (c != '.') return Loc(rowIndex, colIndex)
@@ -14,113 +14,113 @@ fun findNextPlotStart(map: List<List<Char>>): Loc? {
     return null
 }
 
-fun getPlot(map: List<MutableList<Char>>, plotStart: Loc): Plot {
-    val type = map.get(plotStart)
+fun getRegion(map: List<MutableList<Char>>, startingPlot: Loc): Region {
+    val type = map.get(startingPlot)
 
-    val plotLocs = mutableSetOf<Loc>()
+    val regionPlots = mutableSetOf<Loc>()
 
-    val locs = ArrayDeque<Loc>()
-    locs.add(plotStart)
-    map.set(plotStart, '.')
+    val plotQueue = ArrayDeque<Loc>()
+    plotQueue.add(startingPlot)
+    map.set(startingPlot, '.')
 
-    while (locs.isNotEmpty()) {
-        val loc = locs.removeFirst()
-        plotLocs.add(loc)
+    while (plotQueue.isNotEmpty()) {
+        val plot = plotQueue.removeFirst()
+        regionPlots.add(plot)
 
-        loc.edges()
+        plot.edges()
             .filter { it.isValid(map) }
             .filter { map.get(it) == type }
             .forEach {
-                locs.add(it)
+                plotQueue.add(it)
                 map.set(it, '.')
             }
     }
 
-    return Plot(plotLocs)
+    return Region(regionPlots)
 }
 
-data class Plot(
-    val locs: Set<Loc>
+data class Region(
+    val plots: Set<Loc>
 ) {
     fun getPerimeterLength(): Int {
-        return locs.sumOf { it.edges().count { edge -> !locs.contains(edge) } }
+        return plots.sumOf { it.edges().count { edge -> !plots.contains(edge) } }
     }
 
     fun getSidesCount(): Int {
-        val getAllPerimeterLocs = locs.flatMap { getPerimeterLocsAt(it) }.toMutableSet()
+        val perimeterPlots = plots.flatMap { getPerimeterPlotsAt(it) }.toMutableSet()
 
         var sidesCount = 0
 
-        while (getAllPerimeterLocs.isNotEmpty()) {
-            val startingLoc = getAllPerimeterLocs.first()
+        while (perimeterPlots.isNotEmpty()) {
+            val startingPlot = perimeterPlots.first()
 
-            var currentLoc = startingLoc
+            var currentPlot = startingPlot
             do {
-                getAllPerimeterLocs.remove(currentLoc)
+                perimeterPlots.remove(currentPlot)
 
-                val nextPossibleLocs = getNextPossiblePerimeterLocs(currentLoc)
-                val (correctPerimeterLocIndex, correctPerimeterLoc) = determineCorrectPerimeterLoc(nextPossibleLocs)
+                val nextPossiblePerimeterPlots = getNextPossiblePerimeterPlots(currentPlot)
+                val (nextPerimeterPlotIndex, nextPerimeterPlot) = determineCorrectPerimeterPlot(nextPossiblePerimeterPlots)
 
-                if (correctPerimeterLocIndex != 1) {
+                if (nextPerimeterPlotIndex != 1) {
                     sidesCount++
                 }
-                currentLoc = correctPerimeterLoc
+                currentPlot = nextPerimeterPlot
 
-            } while (currentLoc != startingLoc)
+            } while (currentPlot != startingPlot)
         }
 
         return sidesCount
     }
 
-    private fun getNextPossiblePerimeterLocs(current: PerimeterLoc): List<PerimeterLoc> {
-        return when (current.perimeterSide) {
+    private fun getNextPossiblePerimeterPlots(current: PerimeterPlot): List<PerimeterPlot> {
+        return when (current.fencedSide) {
             Direction.UP -> listOf(
-                PerimeterLoc(current.loc.right().up(), Direction.LEFT),
-                PerimeterLoc(current.loc.right(), Direction.UP),
-                PerimeterLoc(current.loc, Direction.RIGHT),
+                PerimeterPlot(current.plot.right().up(), Direction.LEFT),
+                PerimeterPlot(current.plot.right(), Direction.UP),
+                PerimeterPlot(current.plot, Direction.RIGHT),
             )
             Direction.DOWN -> listOf(
-                PerimeterLoc(current.loc.left().down(), Direction.RIGHT),
-                PerimeterLoc(current.loc.left(), Direction.DOWN),
-                PerimeterLoc(current.loc, Direction.LEFT),
+                PerimeterPlot(current.plot.left().down(), Direction.RIGHT),
+                PerimeterPlot(current.plot.left(), Direction.DOWN),
+                PerimeterPlot(current.plot, Direction.LEFT),
             )
             Direction.LEFT -> listOf(
-                PerimeterLoc(current.loc.up().left(), Direction.DOWN),
-                PerimeterLoc(current.loc.up(), Direction.LEFT),
-                PerimeterLoc(current.loc, Direction.UP),
+                PerimeterPlot(current.plot.up().left(), Direction.DOWN),
+                PerimeterPlot(current.plot.up(), Direction.LEFT),
+                PerimeterPlot(current.plot, Direction.UP),
             )
             Direction.RIGHT -> listOf(
-                PerimeterLoc(current.loc.down().right(), Direction.UP),
-                PerimeterLoc(current.loc.down(), Direction.RIGHT),
-                PerimeterLoc(current.loc, Direction.DOWN)
+                PerimeterPlot(current.plot.down().right(), Direction.UP),
+                PerimeterPlot(current.plot.down(), Direction.RIGHT),
+                PerimeterPlot(current.plot, Direction.DOWN)
             )
         }
     }
 
-    private fun determineCorrectPerimeterLoc(possiblePerimeterLocs: List<PerimeterLoc>): Pair<Int, PerimeterLoc> {
-        for ((i, perimeterLoc) in possiblePerimeterLocs.withIndex()) {
-            if (getPerimeterLocsAt(perimeterLoc.loc).contains(perimeterLoc)) return Pair(i, perimeterLoc)
+    private fun determineCorrectPerimeterPlot(possiblePerimeterPlots: List<PerimeterPlot>): Pair<Int, PerimeterPlot> {
+        for ((i, perimeterPlot) in possiblePerimeterPlots.withIndex()) {
+            if (getPerimeterPlotsAt(perimeterPlot.plot).contains(perimeterPlot)) return Pair(i, perimeterPlot)
         }
-        throw RuntimeException("None of the provided perimeter locs are correct")
+        throw RuntimeException("None of the provided perimeter plots are correct")
     }
 
-    private fun getPerimeterLocsAt(loc: Loc): List<PerimeterLoc> {
-        if (!locs.contains(loc)) return listOf()
+    private fun getPerimeterPlotsAt(plot: Loc): List<PerimeterPlot> {
+        if (!plots.contains(plot)) return listOf()
 
-        val perimeterLocs = mutableListOf<PerimeterLoc>()
+        val perimeterPlots = mutableListOf<PerimeterPlot>()
 
-        if (!locs.contains(loc.up())) perimeterLocs.add(PerimeterLoc(loc, Direction.UP))
-        if (!locs.contains(loc.down())) perimeterLocs.add(PerimeterLoc(loc, Direction.DOWN))
-        if (!locs.contains(loc.left())) perimeterLocs.add(PerimeterLoc(loc, Direction.LEFT))
-        if (!locs.contains(loc.right())) perimeterLocs.add(PerimeterLoc(loc, Direction.RIGHT))
+        if (!plots.contains(plot.up())) perimeterPlots.add(PerimeterPlot(plot, Direction.UP))
+        if (!plots.contains(plot.down())) perimeterPlots.add(PerimeterPlot(plot, Direction.DOWN))
+        if (!plots.contains(plot.left())) perimeterPlots.add(PerimeterPlot(plot, Direction.LEFT))
+        if (!plots.contains(plot.right())) perimeterPlots.add(PerimeterPlot(plot, Direction.RIGHT))
 
-        return perimeterLocs
+        return perimeterPlots
     }
 
     companion object {
-        data class PerimeterLoc(
-            val loc: Loc,
-            val perimeterSide: Direction
+        data class PerimeterPlot(
+            val plot: Loc,
+            val fencedSide: Direction
         )
     }
 }

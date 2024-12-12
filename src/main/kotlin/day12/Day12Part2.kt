@@ -7,14 +7,14 @@ fun main() {
     var totalPrice = 0
 
     while (true) {
-        val plotStart = findNextPlotStart(map) ?: break
+        val regionStartingPlot = findNextRegionStart(map) ?: break
 
-        val plot = getPlot(map, plotStart)
+        val region = getRegion(map, regionStartingPlot)
 
-        val plotArea = plot.locs.size
-        val plotSidesCount = plot.getSidesCount()
+        val regionArea = region.plots.size
+        val regionSidesCount = region.getSidesCount()
 
-        totalPrice += plotSidesCount * plotArea
+        totalPrice += regionSidesCount * regionArea
     }
 
     println(totalPrice)

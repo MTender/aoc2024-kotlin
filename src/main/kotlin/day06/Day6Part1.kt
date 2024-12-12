@@ -1,5 +1,6 @@
 package day06
 
+import general.Direction
 import general.Input
 
 fun main() {

@@ -45,7 +45,7 @@ sealed class Day10Common(
         val currentHeight = map.get(loc).digitToInt()
 
         return loc.edges()
-            .filter { it.isValid(map) }
+            .filter { it.isValid(map.size, map.first().length) }
             .filter { map.get(it).digitToInt() == currentHeight + 1 }
     }
 }

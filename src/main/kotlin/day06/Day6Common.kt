@@ -1,11 +1,6 @@
 package day06
 
-enum class Direction {
-    UP,
-    DOWN,
-    LEFT,
-    RIGHT
-}
+import general.Direction
 
 data class Position(
     val rowIndex: Int,
